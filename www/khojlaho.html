@@ -3,30 +3,85 @@
     <head>
         <title>Punjabi Word Search Game</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
+        <script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+		<!-- script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script -->
         <script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
         <script type="text/javascript" src="js/jquery.wordsearchgame.js"></script>
         <script type="text/javascript" src="js/util.js"></script>
        	<script src="js/jquery.ui.touch-punch.min.js"></script>
+
         <link  rel="stylesheet" type="text/css" href="css/jquery.wordsearchgame.css">
 		<link href="css/bootstrap.min.css" rel="stylesheet" />
 		<link href="css/bootstrap-responsive.min.css" rel="stylesheet" />
+
         <script type="text/javascript" src="js/data/wordsearch.js"></script>
+        <script type="text/javascript" src="js/data/randomwords.js"></script>
         <script>
-        var g;
+        var g, highScore, maintainScore, MAX_DURATION=300;
 		$(document).ready( function () {
 			g = getUrlVars()["g"];
-	        var gd = '';
-	        try {
-	        	gd = eval("gridl"+g.split("-")[0] + "v" + g.split("-")[1]);
-	        }
-	        catch (e) {
-	        	window.location.replace('index.html');
-	        	// return false;
-	        }
-			var dispVal = gd.wordsToDisplay ? gd.wordsToDisplay : gd.words.replace(/;/g, "");
+			// storeObjectInStorage('highScore', DEFAULT_HIGH_SCORES);
+			highScore = getObjectFromStorage('highScore', DEFAULT_HIGH_SCORES);
+			console.log('highScore.isArray() ::' + Array.isArray(highScore));
+			console.log(highScore);
+			maintainScore = false;
+			var levelNum = g.split("-")[0];
+			if (levelNum < 4) {
+				var gd = '';
+				try {
+					gd = eval("gridl"+g.split("-")[0] + "v" + g.split("-")[1]);
+				}
+				catch (e) {
+					window.location.replace('index.html');
+					// return false;
+				}
+				var dispVal = gd.wordsToDisplay ? gd.wordsToDisplay : gd.words.replace(/;/g, "");
+				$("#theGrid").wordsearchwidget({"wordlist" : gd.words, "gridsize" : gd.size, "gridheight" : gd.rows, "gridwidth" : gd.cols, "wordsToDisplay" : dispVal, "helpFind" : true});
+				$('#levelInfo').html("Level "+g.split("-")[0] + '.' + g.split("-")[1]);
+				$('#btnChallenge').hide();
+			}
+			else {
+				//
+				var maxWords = 12, maxWordsSize7 = 1, maxWordsSize6 = 1, maxWordsSize5 = 2, maxWordsSize4 = 3, maxWordsSize3 = 3, maxWordsSize2 = 0;
+				var words = '';
 
-			$("#theGrid").wordsearchwidget({"wordlist" : gd.words, "gridsize" : gd.size, "gridheight" : gd.rows, "gridwidth" : gd.cols, "wordsToDisplay" : dispVal});
+				var rnd = Math.floor(Math.random()*Math.floor(allWords.count/maxWords));
+				console.log(rnd + '--' + (rnd + Math.floor(allWords.count*1/maxWords)) + '--' + (rnd + Math.floor(allWords.count*2/maxWords)));
+				var currWord = allWords.words[rnd];
+				words += currWord;
+				for (var ctr = 1; ctr < maxWords; ctr++) {
+					currWord = allWords.words[rnd + Math.floor(allWords.count*ctr/maxWords)];
+					if (words.indexOf(currWord) >= 0) {
+						for (var innerCtr = 1; innerCtr < 1000; innerCtr+10) {
+							currWord = allWords.words[rnd + Math.floor(allWords.count*ctr/maxWords)+innerCtr];
+							if (words.indexOf(currWord) == -1) {
+								words += ',' + currWord;
+								break;
+							}
+						}
+					}
+					else {
+						words += ',' + currWord;
+					}
+				}
+				console.log(words);
+				// $('#refreshBtn').hide();
+				// $('#nextBtn').hide();
+				$('#btnPractice').hide();
+				$('#levelInfoRow').hide();
+				
+				var dispVal = words.replace(/;/g, "");
+				$("#theGrid").wordsearchwidget({"wordlist" : words, "gridsize" : 12, "gridheight" : 12, "gridwidth" : 10, "wordsToDisplay" : dispVal, "helpFind" : false});
+
+				// Timer
+				var startAt = 0, timer = document.querySelector('#timer'), timeToBeat = document.querySelector('#timeToBeat');
+				startTimer(startAt, timer, timeToBeat);
+
+				$('#levelInfo').html("Level "+g.split("-")[0]);
+				$('#levelInfo').hide();
+				maintainScore = true;
+			}
+
 
 			$('#nextBtn').click(function() {
 				window.location.replace('khojlaho.html?g=' + g.split("-")[0] + '-' + (convertToInt(g.split("-")[1])+1));
@@ -37,21 +92,98 @@
 			$('#homeBtn').click(function() {
 				window.location.replace('index.html');
 			});
-			$('#levelInfo').html("Level "+g.split("-")[0] + ' Round ' + g.split("-")[1]);
+			$('#homeBtnIconOnly').click(function() {
+				window.location.replace('index.html');
+			});
+			// $('#levelInfo').html("Level "+g.split("-")[0] + '.' + g.split("-")[1]);
+			// prepareWord(['vYru', 'VVik']);
 		});
 
+		/*startTimer = function(duration, display) {
+			var start = Date.now(), diff;
+			console.log('Start::' + start);
+			function timer() {
+				// get the number of seconds that have elapsed since 
+				// startTimer() was called
+				// diff = duration - (((Date.now() - start) / 1000) | 0);
+				diff = duration + (((Date.now() - start) / 1000) | 0);
+				console.log('diff ::' + diff);
+				display.textContent = diff + " secs";
+				console.log('Inside Timer.');
+			};
+			// we don't want to wait a full second before the timer starts
+			timer();
+			setInterval(timer, 1000);
+			return this;
+		}*/
+
+		prepareWord = function(existingWords) {
+			var allWords = '';
+			for (var ctr=0; ctr < existingWords.length; ctr++) {
+				var existingWord = existingWords[ctr];
+				// console.log('existingWord :::' + existingWord);
+				var allChar = 'qertplkjhgfdsazxcvbnmQETPLKJGFDSAZXCVB^&|i'; // Another character - \
+				var chr, prevChr, newWord = '', wordChars = existingWord.split('');
+				// console.log('wordChars :::' + wordChars);
+				prevChr = '';
+				for (var i=0; i < wordChars.length; i++) {
+					chr = wordChars[i];
+					// console.log(chr + '--' + allChar.indexOf(chr) + '--' + chr.indexOf(allChar));
+					if (allChar.indexOf(chr) >= 0  &&  prevChr != 'i'  &&  prevChr != '') {
+						// add a ';' before if previous chr was not 'i'
+						newWord += ';';
+					}
+					else if (chr == 'i'  &&  prevChr != '') {
+						// add a ';' before.
+						newWord += ';';
+					}
+					else {
+						// ignore, move to next
+					}
+					newWord += chr;
+					prevChr = chr;
+				}
+				// console.log(newWord);
+				allWords += newWord + '____';
+			}
+			console.log(allWords);
+		}
+
+
 		$(document).bind("AllWordsFoundEvent", function() {
-			alert('Congratulations. Level complete. Good Job!! \n\nMove to next level.');
-			window.location.replace('khojlaho.html?g=' + g.split("-")[0] + '-' + (convertToInt(g.split("-")[1])+1));
+			setTimeout(function(){
+				if (maintainScore) {
+					highScore.push(timeElapsed);
+					highScore.sort(function(a, b){return a-b});
+					highScore = highScore.splice(0, 5);
+					storeObjectInStorage('highScore', highScore);
+				}
+				var level = g.split("-")[0];
+				if (level < 4) {
+					alert('Congratulations. Level complete. Good Job!! \n\nMove to next level.');
+					window.location.replace('khojlaho.html?g=' + g.split("-")[0] + '-' + (convertToInt(g.split("-")[1])+1));
+				}
+				else {
+					var positionSuffix = ['st', 'nd', 'rd', 'th', 'th'];
+					var position = highScore.indexOf(timeElapsed);
+					position++;
+					if (position == 1) alert('CONGRATULATIONS. YOU JUST BEAT THE BEST SCORE. Great going!! Current time: ' + timeElapsed + ' secs.');
+					else if (position > 0 && position <= 5) alert('Congratulations. You\'ve just beaten ' + position + positionSuffix[position-1] + ' best score. Great going!! Current time: ' + timeElapsed + ' secs.');
+					else alert('Congratulations. You completed the puzzle within time.');
+					
+					window.location.replace('index.html');
+				}
+			}, 500);
+		});
+		
+		$(document).bind("TimeUpEvent", function() {
+			setTimeout(function(){
+				alert('Time Up!!! Try it differently next time.');
+				window.location.replace('index.html');
+			}, 500);
 		});
 		</script>
-        <style type="text/css">
-        .jumbotron {
-        	margin: 30px 0;
-       		
-      	}
-        
-        </style>
+
     </head>
     <body class="bodyClass">
     	<div class="container">
@@ -59,14 +191,25 @@
       			<div id="theGrid" />
       		</div>
     		<div class="row-fluid">
-   	  			<div class="span12">
-					<span id="levelInfo"></span>&nbsp;&nbsp;
+   	  			<div class="span12" id="btnPractice">
 					<a id="homeBtn" class="btn btn-success"><i class="icon-home icon-white"></i> Home</a>
 					<a id="refreshBtn" class="btn btn-primary"><i class="icon-refresh icon-white"></i> Refresh</a>
+					<span id="levelInfo" class="label label-inverse" style="padding: 8px 8px; border-radius:10px"></span>
 					<a id="nextBtn" class="btn btn-danger"><i class="icon-circle-arrow-right icon-white"></i> Next</a>
 				</div>
+				<div class="span12" id="levelInfoRow">
+					
+				</div>
+				<div class="span12" id="btnChallenge">
+					<a id="homeBtnIconOnly" class="btn btn-success"><i class="icon-home icon-white"></i></a>
+					<span id="timer" class="label label-info" style="width: 120px; font-size: 14px; padding: 8px 4px; border-radius:10px"></span>
+					<span id="timeToBeat" class="label label-inverse" style="font-size: 14px; padding: 8px 8px; border-radius:10px"></span>
+				</div>
+			</div>
+    		<div class="row-fluid">
+				<span id="debugInfo"></span>
    	  		</div>
-    		
+
       	</div>
         <!-- <script type="text/javascript" src="cordova-2.7.0.js"></script> -->
     </body>

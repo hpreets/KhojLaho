@@ -1,55 +1,77 @@
 @font-face {
     font-family: "GurbaniAkhar";
-    src: url("../fonts/GURAKHAR.TTF") format("opentype");   
+    src: url("../fonts/GURAKHAR.TTF") format("opentype");
 }
 
 .bodyClass {
 	text-align: center;
+	padding: 0px;
+	margin: 0px;
 }
 /* Style for grid cells */
 .rf-tgrid {
-    
-    font-family: GurbaniAkhar,Verdana,Arial,Helvetica,sans-serif;
-    font-weight: bold;
-    font-size: 24px;
-    margin: 1px;
-	padding: 10px 15px 10px 15px;
+    font-family: GurbaniAkhar;
+	font-weight: normal;
+    /*font-size: 22px;*/
+    /*margin: 1px;*/
+	/*padding: 10px 15px 10px 15px;*/
+	/*padding: 5px 5px 5px 5px;*/
 	border: 1px solid bisque;
     vertical-align: middle;
     text-align: center;
-
+    font-size: 16px;
+	width:24px;
+	height:24px;
 }
+
+/*.rf-tgrid-10x10 {
+    font-size: 20px;
+	width:30px;
+	height:30px;
+}
+.rf-tgrid-11x11 {
+    font-size: 22px;
+	width:31px;
+	height:30px;
+}
+.rf-tgrid-12x12 {
+    font-size: 20px;
+	width:28px;
+	height:30px;
+}
+*/
 
 /* Style for the grid */
 .rf-tablestyle {
-    border: 2px solid;
+    border: 1px solid;
     border-color: gold;
     background-color: ghostwhite;
     cursor: pointer;
-    margin-left:auto; 
+    margin-left:auto;
     margin-right:auto;
 }
 
 /* Style for the div containing the grid */
 #rf-searchgamecontainer {
-    padding-right: 5px;
+    /*padding-right: 5px;*/
+	margin-top:10px;
     float:center;
 }
 
+
 /* Style for the div containing the word list */
 #rf-wordcontainer {
-    font-family: GurbaniAkhar,Verdana,Arial,Helvetica,sans-serif;
+    font-family: GurbaniAkhar;
 	font-size: 18px;
-	padding: 10px; 
+	padding-top: 5px;
 	cursor: default;
 	margin : 0 0 0 0;
-
-	cursor: pointer;	
+	cursor: pointer;
 }
 
 /* Style for the words that have been found */
 .rf-foundword {
-    font-family: GurbaniAkhar,Verdana,Arial,Helvetica,sans-serif;
+    font-family: GurbaniAkhar;
 	font-size: 18px;
 	text-decoration : line-through;
 }
@@ -57,7 +79,7 @@
 #rf-tablegrid .rf-armed {
 /*	background: lightcyan;*/
     float:center;
-    margin: 10px;
+    margin: 1px;
 }
 
 #rf-tablegrid .rf-highlight {
@@ -67,7 +89,7 @@
 
 #rf-tablegrid .rf-glowing {
 	background: greenyellow;
-        
+
 }
 
 #rf-tablegrid .rf-selected {
@@ -77,5 +99,86 @@
 /* style for words that didn't make it on the grid */
 .rf-pfalse {
     color: gray;
-    visibility: hidden; 
+    visibility: hidden;
+}
+
+@media(min-width:318px){
+	.rf-tgrid {
+		font-size: 20px;
+		width:30px;
+		height:30px;
+	}
+}
+@media(min-width:354px){
+	.rf-tgrid {
+		font-size: 24px;
+		width:34px;
+		height:34px;
+	}
+}
+/*@media(min-width:380px){
+	.rf-tgrid {
+		font-size: 24px;
+		font-weight: bold;
+		width:35px;
+		height:35px;
+	}
+}*/
+@media(min-width:768px){
+	.rf-tgrid {
+		font-size: 26px;
+		font-weight: bold;
+		width:36px;
+		height:36px;
+	}
+	/*
+	.rf-tgrid-10x10 {
+		font-size: 26px;
+		width:32px;
+		height:32px;
+	}
+	.rf-tgrid-12x12 {
+		font-size: 25px;
+		width:37px;
+		height:32px;
+	}
+	.rf-tgrid-14x14 {
+		font-size: 24px;
+		width:35px;
+		height:32px;
+	}
+	#rf-searchgamecontainer {
+		padding-right: 5px;
+		margin-top:5px;
+		float:center;
+	}*/
+}
+@media(min-width:992px){
+	.rf-tgrid {
+		font-size: 28px;
+		font-weight: bold;
+		width:38px;
+		height:38px;
+	}
+	/*.rf-tgrid-10x10 {
+		font-size: 28px;
+		width:44px;
+		height:34px;
+	}
+	.rf-tgrid-12x12 {
+		font-size: 27px;
+		width:42px;
+		height:34px;
+	}
+	.rf-tgrid-14x14 {
+		font-size: 26px;
+		width:40px;
+		height:34px;
+	}
+	#rf-searchgamecontainer {
+		padding-right: 5px;
+		margin-top:10px;
+		float:center;
+	}*/
+
 }

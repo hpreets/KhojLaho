@@ -1,3 +1,6 @@
+// 320*426 -- 240*320
+// 320*533
+// 384*592
 
 /*!
  * The Word Search Game Widget
@@ -9,10 +12,10 @@
  */
 
 //==============================================================================
-//------------------------------------------------------------------------------  
+//------------------------------------------------------------------------------
 //The Word Search Game Widget
-//------------------------------------------------------------------------------  
-//	
+//------------------------------------------------------------------------------
+//
 //	------
 //	Usage:
 //	------
@@ -21,15 +24,15 @@
 //		        three,four,five,six,seven,eight,mozart,bach,meyer,rose,mahler";
 //		$("#theGrid").wordsearchwidget({"wordlist" : words,"gridsize" : 12});
 //	});
-//	
+//
 //  -------
-//  Inputs: 
+//  Inputs:
 //  -------
 //  gridsize - Size of grid to generate (this will be a square)
 //	wordlist - Comma separated list of words to place on the grid
-//	
+//
 //	-------------
-//	What it does: 				
+//	What it does:
 //	-------------
 //	Creates a grid of letters with words from the wordlist
 //	These words are randomly placed in the following directions
@@ -39,23 +42,23 @@
 //	4. Right-Diagonal
 //	In addition, the letters are placed in forward or reverse order, randomly
 //	Provision is made to overlap words
-//	
-//	The User is expected to click on a letter and drag to the last letter of the 
+//
+//	The User is expected to click on a letter and drag to the last letter of the
 //	word. If the selected letters form a word that is in the word list the UI
 //	will indicate that by crossing it out from the wordlist
-//	
-//	If the user cannot find a word, she has to click on that word in the 
+//
+//	If the user cannot find a word, she has to click on that word in the
 //	wordlist and the UI will hightlight the word in the grid and cross it out
-//	
+//
 //	------------------
 //	Technical Details:
-//	------------------ 
-//	
-//		Contains 3 areas: 
+//	------------------
+//
+//		Contains 3 areas:
 //			a) main game grid (#rf-searchgamecontainer)
 //			b) list of words to be found (#rf-wordcontainer)
 //			c) list of words that have been found (#rf-foundwordcontainer)
-//		
+//
 //		Data Structures used:
 //		---------------------
 //			Objects related to the Data Model
@@ -66,24 +69,24 @@
 //					3) VerticalPopulator
 //					4) LeftDiagonalPopulator
 //					5) RightDiagonalPopulator
-//					
+//
 //				b) WordList
 //					1) Word
-//			
+//
 //			Objects related to View
 //			1) Root
 //			2) Hotzone
 //			3) Arms
 //			4) Visualizer
-//			
+//
 //			Objects related to the controller
-//			1) GameWidgetHelper 		
-//			
-//			
+//			1) GameWidgetHelper
+//
+//
 //==============================================================================
 
 (function( $, undefined ) {
-    
+
     $.widget("ryanf.wordsearchwidget", $.ui.mouse, {
 
             options : {
@@ -91,110 +94,32 @@
 				gridsize : 10,
 				gridheight : 7,
 				gridwidth : 14,
-				wordsToDisplay : null
+				wordsToDisplay : null,
+				marginX : 31,
+				marginY : 31,
+				helpFind : false
             },
 			_mapEventToCell: function(event) {
+				var marginX = $('#rf-tablegrid').offset().left;
+				var marginY = $('#rf-tablegrid').offset().top;
                 var currentColumn = Math.ceil((event.pageX - this._cellX) / this._cellWidth);
-                var currentRow = Math.ceil((event.pageY - this._cellY) / this._cellHeight);
+                var currentRow = Math.ceil((event.pageY - this._cellY - marginY/2) / this._cellHeight);
                 var el = $('#rf-tablegrid tr:nth-child('+currentRow+') td:nth-child('+currentColumn+')');
+				// // console.log('el---' + el + '----' + currentColumn + '--_cellX::' + this._cellX + '--_cellWidth ::' + this._cellWidth +  '--event.pageX::' + event.pageX + '--marginX::' + marginX);
+				// // console.log('el---' + el + '----' + currentRow +    '--_cellY::' + this._cellY + '--_cellHeight::' + this._cellHeight + '--event.pageY::' + event.pageY + '--marginY::' + marginY);
                 return el;
 			},
-            
-            _create : function () {
-                //member variables
-                // this.model      = GameWidgetHelper.prepGrid(this.options.gridsize, this.options.wordlist, this.options.wordsToDisplay)
-                this.model      = GameWidgetHelper.prepGrid(this.options.gridheight, this.options.gridwidth, this.options.wordlist, this.options.wordsToDisplay)
-                this.startedAt  = new Root();
-                this.hotzone    = new Hotzone();
-                this.arms       = new Arms();
-				
-                
-				GameWidgetHelper.renderGame(this.element[0],this.model);
-				
-				this.options.distance=0; // set mouse option property
-                this._mouseInit();
-                
-                var cell = $('#rf-tablegrid tr:first td:first');
-				this._cellWidth = cell.outerWidth();
-				this._cellHeight = cell.outerHeight();
-				this._cellX = cell.offset().left;
-				this._cellY = cell.offset().top;
-            },//_create
-            
-            destroy : function () {
-                
-                this.hotzone.clean();
-                this.arms.clean();
-                this.startedAt.clean();
-                
-				this._mouseDestroy();
-				return this;
-                
-            },
-            
-            //mouse callbacks
-            _mouseStart: function(event) {
-				
-				var panel = $(event.target).parents("div").attr("id");
-				if ( panel == 'rf-searchgamecontainer') {
-					this.startedAt.setRoot( event.target );
-					this.hotzone.createZone( event.target )
-				}
-				else if ( panel == 'rf-wordcontainer') {
-					//User has requested help. Identify the word on the grid
-					//We have a reference to the td in the cells that make up this word
-					var idx = $(event.target).parent().children().index(event.target);
 
-					var selectedWord = this.model.wordList.get(idx);
-					$(selectedWord.cellsUsed).each ( function () {
-						Visualizer.highlight($(this.td));
+			_checkAndMarkWord : function(event, selWord, returnToNormal) {
+
+                // get word
+				var selectedword = selWord;
+				if (selectedword == '') {
+					$('.rf-glowing, .rf-highlight', this.element[0]).each(function() {
+						var u = $.data(this,"cell");
+						selectedword += u.value;
 					});
-					
 				}
-				/*else if (panel == 'howtoplaybtn') {
-					$( "#howtoplay" ).dialog( "open" );
-				}*/
-
-            },
-            
-            _mouseDrag : function(event) {
-                event.target = this._mapEventToCell(event); 
-                //if this.root - clear out everything and return to orignal clicked state
-                if (this.startedAt.isSameCell(event.target)) {
-                    this.arms.returnToNormal();
-                    this.hotzone.setChosen(-1);
-                    return;
-                }
-                
-                //if event is on an armed cell
-                if ($(event.target).hasClass("rf-armed") || $(event.target).hasClass("rf-glowing") ) { //CHANGE! 
-                    
-                    //if in hotzone
-                    var chosenOne = this.hotzone.index(event.target);
-                    if (chosenOne!= -1) {
-                        //set target to glowing; set rest of hotzone to armed
-                        this.hotzone.setChosen(chosenOne);
-                        
-                        //calculate arms and set to armed
-                        this.arms.deduceArm(this.startedAt.root, chosenOne);
-                        
-                        
-                    }else { //in arms
-                        //set glowing from target to root
-                        this.arms.glowTo(event.target)
-                    }
-                }
-                
-            },
-            
-            _mouseStop : function (event) {
-
-                //get word
-				var selectedword = '';
-                $('.rf-glowing, .rf-highlight', this.element[0]).each(function() {
-                        var u = $.data(this,"cell");
-                        selectedword += u.value;
-                });
 
                 var wordIndex = this.model.wordList.isWordPresent(selectedword);
                 if (wordIndex!=-1) {
@@ -215,11 +140,124 @@
                     }
                 }
 
-                this.hotzone.returnToNormal();
-                this.startedAt.returnToNormal();
-                this.arms.returnToNormal();
+				if (returnToNormal || wordIndex!=-1) {
+					this.hotzone.returnToNormal();
+					this.startedAt.returnToNormal();
+					this.arms.returnToNormal();
+				}
+			},
+
+            _create : function () {
+                //member variables
+                // this.model      = GameWidgetHelper.prepGrid(this.options.gridsize, this.options.wordlist, this.options.wordsToDisplay)
+                this.model      = GameWidgetHelper.prepGrid(this.options.gridheight, this.options.gridwidth, this.options.wordlist, this.options.wordsToDisplay)
+                this.startedAt  = new Root();
+                this.hotzone    = new Hotzone();
+                this.arms       = new Arms();
+
+
+				GameWidgetHelper.renderGame(this.element[0],this.model);
+
+				this.options.distance=0; // set mouse option property
+                this._mouseInit();
+
+                var cell = $('#rf-tablegrid tr:first td:first');
+				this._cellWidth = cell.outerWidth();
+				this._cellHeight = cell.outerHeight();
+				this._cellX = cell.offset().left;
+				this._cellY = cell.offset().top;
+				// console.log('Inside _create');
+            },//_create
+
+            destroy : function () {
+
+                this.hotzone.clean();
+                this.arms.clean();
+                this.startedAt.clean();
+
+				this._mouseDestroy();
+				return this;
+
+            },
+
+            //mouse callbacks
+            _mouseStart: function(event) {
+
+				var panel = $(event.target).parents("div").attr("id");
+				if ( panel == 'rf-searchgamecontainer') {
+					this.startedAt.setRoot( event.target );
+					this.hotzone.createZone( event.target )
+				}
+				else if ( panel == 'rf-wordcontainer') {
+					console.log('rf-wordcontainer ...');
+					console.log(this.options.helpFind);
+					if (this.options.helpFind == true) {
+						//User has requested help. Identify the word on the grid
+						//We have a reference to the td in the cells that make up this word
+						var idx = $(event.target).parent().children().index(event.target);
+						console.log('rf-wordcontainer ------');
+						console.log(event.target);
+						console.log(idx);
+
+						var selectedWord = this.model.wordList.get(idx);
+						console.log(selectedWord);
+						$(selectedWord.cellsUsed).each ( function () {
+							Visualizer.highlight($(this.td));
+						});
+					}
+				}
+				// // console.log(event.target.offsetWidth);
+				// console.log(event.target.innerHTML);
+				// $('#debugInfo').html(event.target.offsetWidth +'*'+ event.target.offsetHeight +' - '+ event.target.innerHTML);
+				/*else if (panel == 'howtoplaybtn') {
+					$( "#howtoplay" ).dialog( "open" );
+				}*/
+
+            },
+
+            _mouseDrag : function(event) {
+                event.target = this._mapEventToCell(event);
+                //if this.root - clear out everything and return to orignal clicked state
+
+                if (this.startedAt.isSameCell(event.target)) {
+                    this.arms.returnToNormal();
+                    this.hotzone.setChosen(-1);
+                    return;
+                }
+
+                //if event is on an armed cell
+                if ($(event.target).hasClass("rf-armed") || $(event.target).hasClass("rf-glowing") ) { //CHANGE!
+
+                    //if in hotzone
+                    var chosenOne = this.hotzone.index(event.target);
+					// // console.log(chosenOne);
+                    if (chosenOne != -1) {
+						// // console.log('In if chosenOne :::' + chosenOne);
+                        //set target to glowing; set rest of hotzone to armed
+                        this.hotzone.setChosen(chosenOne);
+
+                        //calculate arms and set to armed
+                        this.arms.deduceArm(this.startedAt.root, chosenOne);
+
+
+                    } else if (chosenOne == 0  ||  chosenOne == 2) {
+
+					}
+					else { //in arms
+                        //set glowing from target to root
+						// console.log('In else chosenOne :::' + chosenOne);
+                        this.arms.glowTo(event.target)
+                    }
+					this._checkAndMarkWord(event, '', false);
+                }
+
+            },
+
+            _mouseStop : function (event) {
+                this._checkAndMarkWord(event, '', true);
             }
-            
+
+
         }
     ); //widget
 
@@ -229,10 +267,10 @@ $.extend($.ryanf.wordsearchwidget, {
 });
 
 //------------------------------------------------------------------------------
-// VIEW OBJECTS 
+// VIEW OBJECTS
 //------------------------------------------------------------------------------
 /*
- * The Arms represent the cells that are selectable once the hotzone has been 
+ * The Arms represent the cells that are selectable once the hotzone has been
  * exited/passed
  */
 function Arms() {
@@ -262,7 +300,7 @@ function Arms() {
                 $(root).parent().prevAll().each( function() {
                     $n.push($(this).children().get(ix));
                 });
-                
+
                 break;
 
             case 3: //vertical bottom
@@ -273,7 +311,7 @@ function Arms() {
                 break;
 
             case 4: //right diagonal up
-                
+
                 var $p = this.arms;
 
                 //for all prevAll rows
@@ -321,9 +359,9 @@ function Arms() {
 	//lights up the cells that from the root cell tothe current one
     this.glowTo = function (upto) {
         var to = $(this.arms).index(upto);
-        
+        // // console.log('this.arms.length ::::' + this.arms.length + '----to::' + to);
         for (var x=1;x<this.arms.length;x++) {
-            
+
             if (x<=to) {
                 Visualizer.glow(this.arms[x]);
             }
@@ -333,37 +371,37 @@ function Arms() {
             }
         }
     }
-	
-	//clear out the arms 
+
+	//clear out the arms
     this.returnToNormal = function () {
         if (!this.arms) return;
-        
+
         for (var t=1;t<this.arms.length;t++) { //don't clear the hotzone
             Visualizer.restore(this.arms[t]);
         }
     }
-    
-    
+
+
     this.clean = function() {
         $(this.arms).each(function () {
-           Visualizer.clean(this); 
+           Visualizer.clean(this);
         });
     }
- 
+
 }
 
 /*
  * Object that represents the cells that are selectable around the root cell
  */
 function Hotzone() {
-    
+
     this.elems = null;
-    
+
     //define the hotzone
     //select all neighboring cells as nominees
     this.createZone = function (root) {
-        this.elems = new Array(); 
-        
+        this.elems = new Array();
+
         var $tgt = $(root);
         var ix = $tgt.parent().children().index($tgt);
 
@@ -373,7 +411,7 @@ function Hotzone() {
         //nominatedCells.push(event.target); // self
         this.elems.push($tgt.prev()[0],$tgt.next()[0]); //horizontal
         this.elems.push( above, below );
-        /*this.elems.push( above, below, 
+        /*this.elems.push( above, below,
                 $(above).next()[0],$(above).prev()[0], //diagonal
                 $(below).next()[0],$(below).prev()[0] //diagonal
               );*/
@@ -384,7 +422,7 @@ function Hotzone() {
                 Visualizer.arm(this);
             }
         });
-        
+
     }
     //give the hotzone some intelligence
     this.index = function (elm) {
@@ -407,13 +445,13 @@ function Hotzone() {
 	            Visualizer.restore(this.elems[t]);
 	        }
     }
-    
+
     this.clean = function() {
         $(this.elems).each(function () {
-           Visualizer.clean(this); 
+           Visualizer.clean(this);
         });
     }
-    
+
 }
 
 /*
@@ -421,54 +459,56 @@ function Hotzone() {
  */
 function Root() {
     this.root = null;
-    
+
     this.setRoot = function (root) {
         this.root = root;
         Visualizer.glow(this.root);
     }
-    
+
     this.returnToNormal = function () {
         Visualizer.restore(this.root);
     }
-    
+
     this.isSameCell = function (t) {
+		// console.log('isSameCell ::: t :::' + $(t).inner);
+		// console.log(t);
         return $(this.root).is($(t));
     }
-    
+
     this.clean = function () {
         Visualizer.clean(this.root);
     }
-    
+
 }
 
 /*
  * A utility object that manipulates the cell display based on the methods called.
  */
 var Visualizer = {
-	
+
     glow : function (c) {
         $(c).removeClass("rf-armed")
             .removeClass("rf-selected")
             .addClass("rf-glowing");
     },
-    
+
     arm : function (c) {
         $(c)//.removeClass("rf-selected")
             .removeClass("rf-glowing")
             .addClass("rf-armed");
-        
+
     },
-    
+
     restore : function (c) {
         $(c).removeClass("rf-armed")
             .removeClass("rf-glowing");
-            
+
         if ( c!=null && $.data(c,"selected") == "true" ) {
             // $(c).addClass("rf-selected");
 			$(c).css('background', $.data(c,"selectedColor"))
         }
     },
-    
+
     select : function (c) {
         $(c).removeClass("rf-armed")
             .removeClass("rf-glowing")
@@ -477,34 +517,34 @@ var Visualizer = {
 				.animate({'opacity' : 'show'}, 500, "linear")
 			})
     },
-    
+
     highlight : function (c) {
         $(c).removeClass("rf-armed")
             .removeClass("rf-selected")
 			.addClass("rf-highlight");
     },
-	
+
     signalWordFound : function (w) {
-    	/*
+
 		$(w).css("background",'yellow').animate({"opacity": 'hide'},1000,"linear",
 					 function () {
 						 $(w).css("background",'white')
 						 $(w).addClass('rf-foundword').animate({"opacity": 'show'},1000,"linear")
 					 });
-		*/
-    	$(w).addClass('rf-foundword');
+
+    	//$(w).addClass('rf-foundword');
     },
 
-	
+
 
 
 	clean : function (c) {
         $(c).removeClass("rf-armed")
             .removeClass("rf-glowing")
             .removeClass("rf-selected");
-            
-        $.removeData($(c),"selected");    
-        
+
+        $.removeData($(c),"selected");
+
     }
 }
 
@@ -527,7 +567,7 @@ function Cell() {
     this.isSelecting = true;
 	this.td = null; // reference to UI component
 
-    
+
 }//Cell
 
 /*
@@ -535,7 +575,7 @@ function Cell() {
  */
 function Grid() {
     this.cells = null;
-    
+
     /*this.directions = [
 				"LeftDiagonal",
 				"Horizontal",
@@ -543,12 +583,10 @@ function Grid() {
 				"Vertical"
                       ];*/
     this.directions = [
-				"Horizontal",
 				"Vertical",
 				"Horizontal",
-				"Vertical"
                       ];
-    
+
     this.initializeGrid= function(height, width) {
         this.cells = new Array(height);
         for (var i=0;i<height;i++) {
@@ -560,20 +598,20 @@ function Grid() {
             }
         }
     }
-    
-    
+
+
     this.getCell = function(row,col) {
         return this.cells[row][col];
     }
-    
+
     this.createHotZone = function(uic) {
         var $tgt = uic;
 
-        var hzCells = new Array(); 
+        var hzCells = new Array();
         var ix = $tgt.parent().children().index($tgt);
 
     }
-    
+
     this.height = function() {
         return this.cells.length;
     }
@@ -583,35 +621,40 @@ function Grid() {
     /*this.size = function() {
         return this.cells.length;
     }*/
-    
+
     //place word on grid at suggested location
     this.put = function(row, col, word) {
         //Pick the right Strategy to place the word on the grid
-        var populator = eval("new "+ eval("this.directions["+Math.floor(Math.random()*4)+"]") +"Populator(row,col,word, this)");
+        var populator = eval("new "+ eval("this.directions["+Math.floor(Math.random()*2)+"]") +"Populator(row,col,word, this)");
         var isPlaced= populator.populate();
-        
+
         //Didn't get placed.. brute force-fit (if possible)
         if (!isPlaced) {
             for (var x=0;x<this.directions.length;x++) {
                 var populator2 = eval("new "+ eval("this.directions["+x+"]") +"Populator(row,col,word, this)");
                 var isPlaced2= populator2.populate();
                 if (isPlaced2) break;
-                
+
             }
-            
+
         }
     }
-    
-    this.fillGrid = function() {
-   
+
+    this.fillGrid = function(words) {
+		if (words != null) {
+			words = words.split(',').join('_').split(';').join('_');
+			words = words.split('_');
+		}
+		var usedRandom = false;
 		for (var i=0;i<this.height();i++) {
 			for (var j=0;j<this.width();j++) {
 				if (this.cells[i][j].isUnwritten()) {
-					this.cells[i][j].value = Util.randomLetter(1); //String.fromCharCode(Math.floor(97+Math.random()*26));
+					if (usedRandom && words != null && words.length > 0) this.cells[i][j].value = words[Util.random(words.length)];
+					else this.cells[i][j].value = Util.randomLetter(1); //String.fromCharCode(Math.floor(97+Math.random()*26));
+					usedRandom = !usedRandom;
 				}
 			}
 		}
-        
     }
 
 }//Grid
@@ -619,9 +662,9 @@ function Grid() {
 /*
  * Set of strategies to populate the grid.
  */
-//Create a Horizontal Populator Strategy 
+//Create a Horizontal Populator Strategy
 function HorizontalPopulator(row, col, word, grid) {
-    
+
     this.grid = grid;
     this.row =  row;
     this.col = col;
@@ -630,10 +673,10 @@ function HorizontalPopulator(row, col, word, grid) {
     this.height = this.grid.height();
     this.width = this.grid.width();
     this.cells = this.grid.cells;
-    
+
     //populate the word
     this.populate = function() {
-        
+
 
         // try and place word in this row
 
@@ -676,11 +719,11 @@ function HorizontalPopulator(row, col, word, grid) {
         }
         // if still not, then return false (i.e. not placed. we need to try another direction
         return (word.isPlaced);
-            
-        
+
+
     }//populate
 
-    
+
     //write word on grid at given location
     //also remember which cells were used for displaying the word
     this.writeWord = function () {
@@ -720,7 +763,7 @@ function HorizontalPopulator(row, col, word, grid) {
         }
         return isFree;
     }
-    
+
     //try harder, check if there is contigous space anywhere on this line.
     this.findContigousSpace = function (row, word) {
         var freeLocation = -1;
@@ -739,14 +782,14 @@ function HorizontalPopulator(row, col, word, grid) {
             }
         }
         return freeLocation;
-        
+
     }
 }//HorizontalPopulator
 
 
-//Create a Vertical Populator Strategy 
+//Create a Vertical Populator Strategy
 function VerticalPopulator(row, col, word, grid) {
-    
+
     this.grid = grid;
     this.row =  row;
     this.col = col;
@@ -755,10 +798,10 @@ function VerticalPopulator(row, col, word, grid) {
     this.height = this.grid.height();
     this.width = this.grid.width();
     this.cells = this.grid.cells;
-    
+
     //populate the word
     this.populate = function() {
-        
+
 
         // try and place word in this row
 
@@ -801,11 +844,11 @@ function VerticalPopulator(row, col, word, grid) {
         }
         // if still not, then return false (i.e. not placed. we need to try another direction
         return (word.isPlaced);
-            
-        
+
+
     }//populate
 
-    
+
     //write word on grid at given location
     this.writeWord = function () {
 
@@ -817,7 +860,7 @@ function VerticalPopulator(row, col, word, grid) {
             word.containedIn(c);
             word.isPlaced = true;
         }
-        
+
     }
 
     //try even harder, check if this word can be placed by overlapping cells with same content
@@ -844,7 +887,7 @@ function VerticalPopulator(row, col, word, grid) {
         }
         return isFree;
     }
-    
+
     //try harder, check if there is contigous space anywhere on this line.
     this.findContigousSpace = function (col, word) {
         var freeLocation = -1;
@@ -863,14 +906,14 @@ function VerticalPopulator(row, col, word, grid) {
             }
         }
         return freeLocation;
-        
+
     }
 }//VerticalPopulator
 
 
-//Create a LeftDiagonal Populator Strategy 
+//Create a LeftDiagonal Populator Strategy
 function LeftDiagonalPopulator(row, col, word, grid) {
-    
+
     this.grid = grid;
     this.row =  row;
     this.col = col;
@@ -879,10 +922,10 @@ function LeftDiagonalPopulator(row, col, word, grid) {
     this.height = this.grid.height();
     this.width = this.grid.width();
     this.cells = this.grid.cells;
-    
+
     //populate the word
     this.populate = function() {
-        
+
 
         // try and place word in this row
 
@@ -896,7 +939,7 @@ function LeftDiagonalPopulator(row, col, word, grid) {
             var output = this.findContigousSpace(this.row,this.col, word);
 
             if (output[0] != true) {
-                
+
                 // for every row - try to fit this
                 OUTER:for (var col=0, row=(this.height-word.size); row>=0; row--) {
                     for (var j=0;j<2;j++) {
@@ -910,7 +953,7 @@ function LeftDiagonalPopulator(row, col, word, grid) {
                             break OUTER;
                         }
                     }
-                    
+
                 }
            }
             else {
@@ -923,11 +966,11 @@ function LeftDiagonalPopulator(row, col, word, grid) {
         }
         // if still not, then return false (i.e. not placed. we need to try another direction
         return (word.isPlaced);
-            
-        
+
+
     }//populate
 
-    
+
     //write word on grid at given location
     //also remember which cells were used for displaying the word
     this.writeWord = function () {
@@ -971,11 +1014,11 @@ function LeftDiagonalPopulator(row, col, word, grid) {
             }
             lrow++;
             lcol++;
-            
+
         }
         return isFree;
     }
-    
+
     //try harder, check if there is contigous space anywhere on this line.
     this.findContigousSpace = function (xrow, xcol,word) {
         var freeLocation = false;
@@ -983,7 +1026,7 @@ function LeftDiagonalPopulator(row, col, word, grid) {
         var chars = word.chars;
         var lrow = xrow;
         var lcol = xcol;
-        
+
         while (lrow > 0 && lcol > 0) {
             lrow--;
             lcol--;
@@ -1002,7 +1045,7 @@ function LeftDiagonalPopulator(row, col, word, grid) {
             }
             lcol++;
             lrow++;
-            
+
             if (lcol >= this.width || lrow >= this.height) {
                 break;
             }
@@ -1012,14 +1055,14 @@ function LeftDiagonalPopulator(row, col, word, grid) {
             lcol = lcol - chars.length+1;
         }
         return [freeLocation,lrow,lcol];
-        
+
     }
 }//LeftDiagonalPopulator
 
 
-//Create a RightDiagonal Populator Strategy 
+//Create a RightDiagonal Populator Strategy
 function RightDiagonalPopulator(row, col, word, grid) {
-    
+
     this.grid = grid;
     this.row =  row;
     this.col = col;
@@ -1029,10 +1072,10 @@ function RightDiagonalPopulator(row, col, word, grid) {
     this.height = this.grid.height();
     this.width = this.grid.width();
     this.cells = this.grid.cells;
-    
+
     //populate the word
     this.populate = function() {
-        
+
 
         // try and place word in this row
 
@@ -1047,7 +1090,7 @@ function RightDiagonalPopulator(row, col, word, grid) {
             var output = this.findContigousSpace(this.row, this.col, word);
 
             if (output[0] != true) {
-                
+
                 // for every row - try to fit this
                 OUTER:for (var col=this.width-1, row=(this.height-word.size); row>=0; row--) {
                     for (var j=0;j<2;j++) {
@@ -1061,7 +1104,7 @@ function RightDiagonalPopulator(row, col, word, grid) {
                             break OUTER;
                         }
                     }
-                    
+
                 }
            }
             else {
@@ -1074,11 +1117,11 @@ function RightDiagonalPopulator(row, col, word, grid) {
         }
         // if still not, then return false (i.e. not placed. we need to try another direction
         return (word.isPlaced);
-            
-        
+
+
     }//populate
 
-    
+
     //write word on grid at given location
     //also remember which cells were used for displaying the word
     this.writeWord = function () {
@@ -1122,11 +1165,11 @@ function RightDiagonalPopulator(row, col, word, grid) {
             }
             lrow++;
             lcol--;
-            
+
         }
         return isFree;
     }
-    
+
     //try harder, check if there is contigous space anywhere on this line.
     this.findContigousSpace = function (xrow, xcol,word) {
         var freeLocation = false;
@@ -1134,7 +1177,7 @@ function RightDiagonalPopulator(row, col, word, grid) {
         var chars = word.chars;
         var lrow = xrow;
         var lcol = xcol;
-        
+
         while (lrow > 0 && lcol < this.grid.width()-1) {
             lrow--;
             lcol++;
@@ -1162,7 +1205,7 @@ function RightDiagonalPopulator(row, col, word, grid) {
             lcol = lcol + chars.length-1;
         }
         return [freeLocation,lrow,lcol];
-        
+
     }
 }//RightDiagonalPopulator
 
@@ -1173,18 +1216,18 @@ function Model() {
     this.grid= null;
     this.wordList= null;
 	this.wordListDisplay=null;
-    
+
     this.init = function(grid,list,display) {
         this.grid = grid;
         this.wordList = list;
 		this.wordListDisplay = display;
-    
+
         for (var i=0;i<this.wordList.size();i++) {
             grid.put( Util.random(this.grid.height()), Util.random(this.grid.width()), this.wordList.get(i));
         }
 
     }
-    
+
 }//Model
 
 /*
@@ -1207,16 +1250,16 @@ function Word(val, display) {
     this.init = function () {
         this.chars = this.value.indexOf(";") > 0 ? this.value.split(";") : this.value.split("");
         this.size = this.chars.length;
-		
+
     }
     this.init();
-    
+
     this.containedIn = function (cell) {
         this.cellsUsed.push(cell);
     }
-	
-	
-    
+
+
+
     this.checkIfSimilar = function (w) {
         if (this.originalValue == w || this.value == w || this.displayValue == w) {
             this.isFound = true;
@@ -1224,7 +1267,7 @@ function Word(val, display) {
         }
         return false;
     }
-    
+
 	this.selectColor = function(z) {
 		var clrs = new Colors();
 		return clrs.randomColor(z);
@@ -1237,16 +1280,16 @@ function Word(val, display) {
  */
 function WordList() {
     this.words = new Array();
-    
+
     this.loadWords = function (csvwords, displayWords) {
         var $n = this.words, ctr=0;
         $(csvwords.split(",")).each(function () {
             $n.push(new Word(this, displayWords.split(",")[ctr]));
 			ctr++;
         });
-        
+
     }
-    
+
     this.add = function(word) {
         //here's where we reverse the letters randomly
         if (Math.random()*10 >5) {
@@ -1259,22 +1302,22 @@ function WordList() {
         }
         this.words[this.words.length] = word;
     }
-    
+
     this.size = function() {
         return this.words.length;
     }
-    
+
     this.get = function(index) {
         return this.words[index];
     }
-    
+
     this.isWordPresent = function(word2check) {
         for (var x=0;x<this.words.length;x++) {
             if (this.words[x].checkIfSimilar(word2check)) return x;
         }
         return -1;
     }
-    
+
     this.allWordsFound = function() {
         for (var x=0;x<this.words.length;x++) {
             if (!this.words[x].isFound) return false;
@@ -1290,11 +1333,11 @@ var Util = {
     random : function(max) {
         return Math.floor(Math.random()*max);
     },
-    
+
     log : function (msg) {
         $("#logger").append(msg);
     },
-	
+
 	randomLetter : function(z) {
 		var letterList = "qrtplkjhgfdszxcvbnmQTPLKJGFDSZXCVB^&";
 		var matraList = "y Y u U I o O y Y u U I o O";
@@ -1312,8 +1355,8 @@ var Util = {
     replaceAll : function (str, oldStr, withStr) {
         str.replace(oldStr, withStr);
     },
-	
-} 
+
+}
 
 
 //------------------------------------------------------------------------------
@@ -1330,24 +1373,27 @@ var GameWidgetHelper = {
 
 		var wordList = new WordList();
 		wordList.loadWords(words, wordsDisplay);
-		
+		// console.log(words);
+
 		var model = new Model();
 		model.init(grid, wordList);
-		grid.fillGrid();
+		grid.fillGrid(words);
 		return model;
 
 	},
-	
+
     renderGame : function(container, model) {
         var grid = model.grid;
         var cells = grid.cells;
-        
-        
+
+
         var puzzleGrid = "<div id='rf-searchgamecontainer'><table id='rf-tablegrid' cellspacing=0 cellpadding=0 class='rf-tablestyle'>";
+		var clsName = "rf-tgrid-" + grid.width() + "x" + grid.width();
+		// console.log(clsName);
         for (var i=0;i<grid.height();i++) {
             puzzleGrid += "<tr>";
             for (var j=0;j<grid.width();j++) {
-                puzzleGrid += "<td  class='rf-tgrid'>"+cells[i][j].value+"</td>";
+                puzzleGrid += "<td  class='rf-tgrid " + clsName + "'>"+cells[i][j].value+"</td>";
             }
             puzzleGrid += "</tr>";
         }
@@ -1361,11 +1407,11 @@ var GameWidgetHelper = {
                 var c = cells[x][y++];
 				$.data(this,"cell",c);
 				c.td = this;
-            }) 
+            })
             y=0;
             x++;
         });
-       
+
         var words = "<div id='rf-wordcontainer'><ul class='inline text-center'>"
         $(model.wordList.words).each(function () {
             words += '<li class=rf-p'+this.isPlaced+'>'+this.displayValue+'</li>';
@@ -1380,17 +1426,17 @@ var GameWidgetHelper = {
         // var howToPlay = '<div id="howtoplay" class="modalInput" rel="#howtoplay">How to Play</div>';
         // $(container).append(howToPlay);
     },
-	
+
 	signalWordFound : function(idx) {
 		var w = $("li").get(idx);
 		Visualizer.signalWordFound(w);
 	}
-	
+
 }
 
 function Colors() {
 	this.randomColor = function(idx) {
-		var color = [ "gold", "lightgreen", "orange", "lightgray", "lightblue", "cyan", "gray", "yellow", "purple", "Brown", "green", "BurlyWood", "CadetBlue", "Chartreuse", "Chocolate", "Coral", "CornflowerBlue", "Cornsilk", "Crimson", "DarkBlue", "DarkCyan", "DarkGoldenRod", "DarkGray", "DarkGreen", "DarkKhaki", "DarkMagenta", "DarkOliveGreen", "Darkorange", "DarkOrchid", "DarkRed", "DarkSalmon", "DarkSeaGreen", "DarkSlateBlue", "DarkSlateGray", "DarkTurquoise", "DarkViolet", "DeepPink", "DeepSkyBlue", "DimGray", "DimGrey", "DodgerBlue", "FireBrick", "FloralWhite", "ForestGreen", "Fuchsia", "Gainsboro", "GhostWhite", "GoldenRod", "GreenYellow", "HoneyDew", "HotPink", "IndianRed", "Indigo", "Ivory", "Khaki", "Lavender", "LavenderBlush", "LawnGreen", "LemonChiffon", "LightCoral", "LightCyan", "LightGoldenRodYellow", "LightPink", "LightSalmon", "LightSeaGreen", "LightSkyBlue", "LightSlateGray", "LightSteelBlue", "LightYellow", "Lime", "LimeGreen", "Linen", "Magenta", "Maroon", "MediumAquaMarine", "MediumBlue", "MediumOrchid", "MediumPurple", "MediumSeaGreen", "MediumSlateBlue", "MediumSpringGreen", "MediumTurquoise", "MediumVioletRed", "MidnightBlue", "MintCream", "MistyRose", "Moccasin", "NavajoWhite", "Navy", "OldLace", "Olive", "OliveDrab", "OrangeRed", "Orchid", "PaleGoldenRod", "PaleGreen", "PaleTurquoise", "PaleVioletRed", "PapayaWhip", "PeachPuff", "Peru", "Pink", "Plum", "PowderBlue", "Red", "RosyBrown", "RoyalBlue", "SaddleBrown", "Salmon", "SandyBrown", "SeaGreen", "SeaShell", "Sienna", "Silver", "SkyBlue", "SlateBlue", "SlateGray", "Snow", "SpringGreen", "SteelBlue", "Tan", "Teal", "Thistle", "Tomato", "Turquoise", "Violet", "Wheat", "White", "WhiteSmoke",  "YellowGreen", "AliceBlue", "AntiqueWhite", "Aqua", "Aquamarine", "Azure", "Beige", "Bisque", "Black", "BlanchedAlmond", "Blue", "BlueViolet" ];
+		var color = [ "gold", "lightgreen", "orange", "lightgray", "lightblue", "cyan", "yellow", "BurlyWood", "Chartreuse", "DeepPink", "DeepSkyBlue", "CadetBlue", "gray", "Cornsilk", "DimGray", "DimGrey", "DodgerBlue", "FireBrick", "FloralWhite", "ForestGreen", "Fuchsia", "Gainsboro", "GhostWhite", "GoldenRod", "GreenYellow", "HoneyDew", "HotPink", "IndianRed", "Indigo", "Ivory", "Khaki", "Lavender", "LavenderBlush", "LawnGreen", "LemonChiffon", "LightCoral", "LightCyan", "LightGoldenRodYellow", "LightPink", "LightSalmon", "LightSeaGreen", "LightSkyBlue", "LightSlateGray", "LightSteelBlue", "LightYellow", "Lime", "LimeGreen", "Linen", "Magenta", "Maroon", "MediumAquaMarine", "MediumBlue", "MediumOrchid", "MediumPurple", "MediumSeaGreen", "MediumSlateBlue", "MediumSpringGreen", "MediumTurquoise", "MediumVioletRed", "MidnightBlue", "MintCream", "MistyRose", "Moccasin", "NavajoWhite", "Navy", "OldLace", "Olive", "OliveDrab", "OrangeRed", "Orchid", "PaleGoldenRod", "PaleGreen", "PaleTurquoise", "PaleVioletRed", "PapayaWhip", "PeachPuff", "Peru", "Pink", "Plum", "PowderBlue", "Red", "RosyBrown", "RoyalBlue", "SaddleBrown", "Salmon", "SandyBrown", "SeaGreen", "SeaShell", "Sienna", "Silver", "SkyBlue", "SlateBlue", "SlateGray", "Snow", "SpringGreen", "SteelBlue", "Tan", "Teal", "Thistle", "Tomato", "Turquoise", "Violet", "Wheat", "White", "WhiteSmoke",  "YellowGreen", "AliceBlue", "AntiqueWhite", "Aqua", "Aquamarine", "Azure", "Beige", "Bisque", "Black", "BlanchedAlmond", "Blue", "BlueViolet", "Chocolate", "Coral", "CornflowerBlue", "purple", "Brown", "green", "DarkBlue", "DarkCyan", "Crimson", "DarkGoldenRod", "DarkGray", "DarkGreen", "DarkKhaki", "DarkMagenta", "DarkOliveGreen", "Darkorange", "DarkOrchid", "DarkRed", "DarkSalmon", "DarkSeaGreen", "DarkSlateBlue", "DarkSlateGray", "DarkTurquoise", "DarkViolet" ];
 		return color[idx];
 	}
 }

@@ -3,6 +3,8 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<title>Khoj Laho</title>
+        <script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
+		<script type="text/javascript" src="js/util.js"></script>
 		<link href="css/bootstrap.min.css" rel="stylesheet" />
 		<link href="css/bootstrap-responsive.min.css" rel="stylesheet" />
 	  <style>
@@ -32,38 +34,65 @@
 	<body>
 		<div data-role="page" id="main">
 	    <div class="container">
-	
+
 	      <!-- Jumbotron -->
-	      <div class="jumbotron">
+	      <div class="text-center">
 	        <h1>KHOJ LAHO</h1>
 	        <p class="lead">An interesting Punjabi Word Search Game</p>
 	      </div>
-	
+
 	      <hr />
-	
+
 	      <!-- Example row of columns -->
 	      <div class="row-fluid">
+	        <span class="span12 text-center">
+			PRACTICE
+	        </span>
 	        <p class="span12 text-center">
-        	  <a class="btn btn-large btn-primary" href="khojlaho.html?g=1-1"> Level 1 </a>
-        	  <a class="btn btn-large btn-success" href="khojlaho.html?g=2-1"> Level 2 </a>
-        	  <a class="btn btn-large btn-warning" href="khojlaho.html?g=3-1"> Level 3 </a>
+        	  <a class="btn btn-medium btn-primary" href="khojlaho.html?g=1-1"> Level 1 </a>
+        	  <a class="btn btn-medium btn-success" href="khojlaho.html?g=2-1"> Level 2 </a>
+        	  <a class="btn btn-medium btn-warning" href="khojlaho.html?g=3-1"> Level 3 </a>
 	        </p>
 	      </div>
-	
+
 	      <hr />
-	
+
+	      <div class="row-fluid">
+			<span class="span12 text-center">
+			CHALLENGE
+	        </span>
+			<p class="span12 text-center">
+				<a class="btn btn-large btn-info" href="khojlaho.html?g=4-1"> Level 4 </a>
+	        </p>
+	      </div>
+
+	      <hr />
+
 	      <div class="row-fluid">
 	        <p class="span12 text-center">
-        	  <a href="#instruc" data-role="button" class="btn btn-inverse"> Instruction </a>
-        	  <a href="#screenshot" data-role="button" class="btn btn-inverse"> Screenshot </a>
-        	  <a href="#trick" data-role="button" class="btn btn-inverse"> Tips </a>
-        	  <a href="#about" data-role="button" class="btn btn-inverse"> About </a>
+        	  <a href="#instruc" data-role="button" class="btn btn-inverse">Instruction</a>
+        	  <a href="#screenshot" data-role="button" class="btn btn-inverse">Screenshot</a>
+	        </p>
+			<p class="span12 text-center">
+        	  <a href="#trick" data-role="button" class="btn btn-inverse">Tips</a>
+        	  <a href="#about" data-role="button" class="btn btn-inverse">About</a>
 	        </p>
 	      </div>
+
+		<hr />
+
+	      <div class="row-fluid">
+					<p class="span12 text-center">
+						<a href="#whatsnew" data-role="button" class="btn btn-danger">What's New</a>
+						<a href="#highscore" data-role="button" class="btn btn-success">High Scores</a>
+	        </p>
+	      </div>
+	      <hr />
+
 		  </div> <!-- /container -->
 		  </div>
 
-	      <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+	      <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
 
 	      <div data-role="page" id="instruc">
 	        <div class="span12">
@@ -71,18 +100,26 @@
 	            <ul >
 	              <li class="instructions">The goal of Word Search is to find all the words hidden within the puzzle.</li>
 				  <li class="instructions">The word list displayed below the puzzle, will show you all of the words that are hidden on the puzzle.</li>
-				  <li class="instructions">To select a word, tap and drag through letters of the word in the puzzle. The letters must lie next to each other either vertically or horizontally. If you’ve selected the letters of the word correctly, the word will highlight on the puzzle and will be strikened from word list.</li> 
+				  <li class="instructions">To select a word, tap and drag through letters of the word in the puzzle. The letters must lie next to each other either vertically or horizontally. If you’ve selected the letters of the word correctly, the word will highlight on the puzzle and will be strikened from word list.</li>
 				  <li class="instructions">The words are arranged vertically and horizontally only.</li>
 				  <li class="instructions">To complete each round you must find all the words in the puzzle.</li>
-	            </ul>
+				</ul>
+		        <!-- <p><a href="#main" data-role="button" class="btn btn-inverse"><i class="icon-backward icon-white"></i> Back</a></p> -->
+
+				<h2>Levels</h2>
+	            <ul >
+					<li class="instructions">The game has 2 type of levels - Practice and Challenge.</li>
+					<li class="instructions"><b>Practice levels</b> is more of fun playing with no scoring or time limit. There are 3 levels for Practice where the maze size increases and the word too change from Punjabi to Gurbani.</li>
+					<li class="instructions"><b>Challenge level</b> is where you challenge yourself. You need to complete the search in 300 seconds. Your top 5 scores are maintained for you to break your own scores. All words in this level are from Guru Granth Sahib Ji only.</li>
+				</ul>
 		        <!-- <p><a href="#main" data-role="button" class="btn btn-inverse"><i class="icon-backward icon-white"></i> Back</a></p> -->
 		      <hr />
 		      <br /><br /><br />
 	        </div>
 	      </div>
 
-		  <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
-		  
+		  <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+
 	      <div data-role="page" id="screenshot">
        	    <h2>Screenshot</h2>
 	      	<p align="center"><img src="img/gamess.png" /></p>
@@ -91,17 +128,17 @@
 		      <br /><br /><br />
 	      </div>
 
-		  <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
-		  
+		  <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+
 	      <div data-role="page" id="trick">
 	      	<div class="span12">
 	      		<h2>Tips</h2>
 	            <ul >
-	              <li class="instructions">If you cannot find a word on the puzzle, tap on the word in word list.</li>
-				  <li class="instructions">On some phones, you will have to scroll to see the buttons at the bottom of the puzzle. Scroll using the white space on the left side of puzzle. No scrolling required on tablets.</li>
-				  <li class="instructions">If the puzzle becomes unresponsive or does not respond to touch or dragging on puzzle in a proper way, tap <img src="img/btnRefresh.png" /> button to start that round again.</li>
-				  <li class="instructions">Tap <img src="img/btnNext.png" /> button to move to the next round without completing the current round.</li>
-				  <li class="instructions">Tap <img src="img/btnHome.png" /> button to move to the game's main screen.</li>
+	              <li class="instructions">If you cannot find a word on the puzzle, tap on the word in word list. This is available only in Practice levels and not in Challenge level.</li>
+				  <li class="instructions">On some phones, you might have to scroll to see the buttons at the bottom of the puzzle. Scroll using the white space below the puzzle.</li>
+				  <li class="instructions">If the puzzle becomes unresponsive or does not respond to touch or dragging on puzzle in a proper way, tap <img src="img/btnRefresh.png" /> button to start that round again. In Challenge level, go back to Home and start afresh.</li>
+				  <li class="instructions">Tap <img src="img/btnNext.png" /> button to move to the next round without completing the current round. This button is available only in Practice level.</li>
+				  <li class="instructions">Tap <img src="img/btnHome.png" /> button to move to the game's main screen. This button is available only in Practice level.</li>
 	            </ul>
 		        <!-- <p><a href="#main" data-role="button" class="btn btn-inverse"><i class="icon-backward icon-white"></i> Back</a></p> -->
 		      <hr />
@@ -109,13 +146,13 @@
 	    	</div>
 	      </div>
 
-		  <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
-		  
+		  <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+
 	      <div data-role="page" id="about">
 	      	<div class="span12">
 	      		<h2>About Khoj Laho</h2>
 	      		<p>
-	      			The purpose of this game is to learn about Punjabi and Gurmat words in a fun and interesting way. This would enable them to start using these words in their day-to-day talks.
+	      			The purpose of this game is to learn about Punjabi and Gurmat words in a fun and interesting way. This would enable us to start using these words in our day-to-day talks.
 	      		</p>
 	      		<p>
 	      			If you wish you add new words to this game, please contact me at mrharpreets@gmail.com
@@ -129,7 +166,68 @@
 	      <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
 	      <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
 
-	    
+		<div data-role="page" id="whatsnew">
+	        <div class="span12">
+				<h3>What's New</h3>
+				<ul >
+					<li class="instructions">New words added to Level 3.</li>
+					<li class="instructions">Added Back button to High Score screen.</li>
+				</ul>
+				<h4>Previous releases</h4>
+				<ul >
+					<li class="instructions">Level 4 is now a Challenge level where as level 1, 2, 3 are Practice levels.</li>
+					<li class="instructions">Top 5 scores from Challenge level stored.</li>
+					<li class="instructions">Challenge level needs to be completed in 300 seconds.</li>
+					<li class="instructions">UI improvements.</li>
+				</ul>
+		      <br /><br /><br />
+	        </div>
+	     </div>
+
+	      <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+	      <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+	      <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+
+		<div data-role="page" id="highscore">
+	        <div class="span12">
+				<h3>High Score</h3>
+				<ol id="highScoreUL">
+				</ol>
+	        </div>
+			<p class="span12 text-center">
+				<a id="resetScore" data-role="button" class="btn btn-danger">Reset</a>
+				<a href="#main" data-role="button" class="btn btn-inverse"><i class="icon-backward icon-white"></i> Back</a>
+	        </p>
+	     </div>
+	      <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+	      <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+	      <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
         <!-- <script type="text/javascript" src="cordova-2.7.0.js"></script> -->
+		<script>
+			$(document).ready( function () {
+				$('#resetScore').click(function() {
+					if (confirm("This will reset your high scores. Tap OK to confirm.")) {
+						console.log('ResetScore buttn clicked');
+						storeObjectInStorage('highScore', DEFAULT_HIGH_SCORES);
+						showHighScores();
+					}
+				});
+			});
+
+			
+			showHighScores = function() {
+				console.log('showHighScore method');
+				var highScoreLI='', highScore = getObjectFromStorage('highScore', DEFAULT_HIGH_SCORES);
+				console.log(DEFAULT_HIGH_SCORES);
+				for (ctr = 0; ctr < highScore.length; ctr++) {
+					highScoreLI += '<li class="instructions">' + highScore[ctr] + ' seconds</li>';
+				}
+				console.log(highScoreLI);
+				$('#highScoreUL').html(highScoreLI);
+			}
+			
+			showHighScores();
+		</script>
 	</body>
 </html>
+
